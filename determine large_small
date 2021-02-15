@@ -1,0 +1,36 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    int i,L,S,n;//L-large, S-small
+    //determine array size
+    printf("How many numbers you want?\n");
+    scanf("%d",&n);
+    //allocate memory for the array
+    int* A = malloc(n*sizeof(int));
+    //take input
+    printf("Enter numbers!\n");
+    for(i=0; i<n; i++){
+        scanf("%d",&A[i]);
+    }
+    //print the input
+    for(i=0; i<n; i++){
+        printf("%d ",A[i]);
+    } printf("\n");
+    //initialize large and small
+    L=S=A[0];
+    for(i=0; i<n; i++){
+        if(A[i]>L){
+            L=A[i];
+        }
+        if(A[i]<S){
+            S=A[i];
+            }
+    }
+    printf("Largest: %d\nSmallest:%d\n",L,S);
+    free(A);
+    return 0;
+}
+
+
