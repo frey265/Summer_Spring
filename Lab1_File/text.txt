@@ -1,0 +1,50 @@
+void vec_print_int(vector* Array){
+    if(Array->type==1){
+        for(int i=0; i < Array->size; i++){
+                printf("%d ",((int*)(Array->data))[i]);
+            }printf("\n");
+    }else{
+        printf("\n Unable to identify data type!\n");
+    }
+}
+void vec_print_flt(vector* Array){
+     if(Array->type==2){
+        for(int i=0; i < Array->size; i++){
+                printf("%.3f ",((float*)(Array->data))[i]);
+            }printf("\n");
+    }else{
+        printf("\n Unable to identify data type!\n");
+    }
+}
+void vec_print_char(vector* Array){
+     if(Array->type==3){
+         for(int i=0; i < Array->size; i++){
+                printf("%c ",((char*)(Array->data))[i]);
+            }printf("\n");
+    }else{
+        printf("\n Unable to identify data type!\n");
+    }
+}
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+
+int is_less_7(const int* elem)
+{
+    return *elem < 7;
+}
+
+int* where(int *b, int(*expr)(void* l), int size_b)
+{
+    int start = 0;
+    for (int i = 0; i < size_b; i++) {
+        memcpy( b + start * sizeof(int), b + i * sizeof(int), sizeof(int) );
+        if (expr( (b + i ) )) {
+            start ++;
+        }
+    }
+    printf("%d", start);
+    return b;
+}
