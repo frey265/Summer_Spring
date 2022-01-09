@@ -1,0 +1,334 @@
+
+#ifndef HASH_H
+#define HASH_H
+#include <iostream>
+#include <cstring>
+#include <list>
+#include <vector>
+#include "queue.h"
+
+template<class T, class V>
+class HashEntry {
+private:
+    T key;
+    V value;
+    HashEntry<T,V>* next;
+public:
+
+    HashEntry(T key, V value)
+    {
+        this->key = key;
+        this->value = value;
+        this->next = NULL;
+    }
+
+    int getKey(){return key;}
+
+    V getValue() {return value;}
+
+    void setValue(V value) {this->value = value;}
+
+    HashEntry<T,V> *getNext() {return next;}
+
+    void setNext(HashEntry<T,V> *next) {this->next = next;}
+
+};
+
+template<class T, class V>
+class HashMap{
+private:
+    HashEntry<T,V> **table;
+    int size;
+    int count = 0;
+public:
+
+    HashMap(int _size = 10) {
+        this->size = _size;
+        table = new HashEntry<T, V>* [size];
+        for (int i = 0; i < size; i++)
+            table[i] = NULL;
+    }
+
+    int hashFunction(const int key)
+    {
+        return key%size;
+    }
+
+    int get(const T& key)
+    {
+        int hash = hashFunction(key);
+        if (table[hash] == NULL)
+            return -1;
+        else {
+            HashEntry<T,V> *entry = table[hash];
+            while (entry != NULL && entry->getKey() != key)
+                    entry = entry->getNext();
+            if (entry == NULL)
+                return -1;
+            else
+                return entry->getValue();
+        }
+
+    }
+
+    void insert(const T& key, const V& value)
+    {
+        int hash = hashFunction(key);
+        if (table[hash] == NULL)
+            table[hash] = new HashEntry<T,V>(key, value);
+        else {
+          HashEntry<T,V> *entry = table[hash];
+            while (entry->getNext() != NULL)
+                entry = entry->getNext();
+            entry->setNext(new HashEntry<T,V>(key, value));
+        }count++;
+    }
+
+    void remove(const T& key)
+    {
+        int hash = hashFunction(key);
+        if (table[hash] != NULL)
+        {
+           HashEntry<T,V> *prevEntry = NULL;
+           HashEntry<T,V> *entry = table[hash];
+            while (entry->getNext() != NULL && entry->getKey() != key)
+            {
+                prevEntry = entry;
+                entry = entry->getNext();
+            }
+            if (entry->getKey() == key)
+            {
+                if (prevEntry == NULL)
+                {
+                    HashEntry<T,V> *nextEntry = entry->getNext();
+                    delete entry;
+                    table[hash] = nextEntry;
+                } else {
+                    HashEntry<T,V> *next = entry->getNext();
+                    delete entry;
+                    prevEntry->setNext(next);
+                }
+                std::cout<<"\n[WARNING!] Entry removed"<<std::endl;
+            }count--;
+        }else{
+            std::cout<<"\n[WARNING!] Entry not found"<<std::endl;
+        }
+    }
+
+    bool searchTable(const T& key)
+    {
+        int hash = hashFunction(key);
+        if (table[hash] != NULL)
+        {
+            HashEntry<T,V> *entry = table[hash];
+            while (entry->getNext() != NULL && entry->getKey() != key)
+            {
+                if (entry->getKey() == key)
+                {
+                    return true;
+                }
+            } if (entry->getKey() == key)
+            {
+                return true;
+            }
+        } return false;
+
+    }
+
+    void printTable()
+    {
+        for(auto i = 0; i< this->size;i++)
+        {
+            if(table[i] == NULL)
+            {
+                continue;
+            }else{
+                HashEntry<T,V> *entry = table[i];
+                while(entry!= NULL)
+                {
+                    std::cout<<"[INFO] Key:"<<entry->getKey() <<"  Value:" <<entry->getValue()<<std::endl;
+                    entry = entry->getNext();
+                }
+            }
+        }
+    }
+
+    ~HashMap() {
+        for (int i = 0; i < size; i++)
+            if (table[i] != NULL) {
+              HashEntry<T,V> *prevEntry = NULL;
+              HashEntry<T,V> *entry = table[i];
+                while (entry != NULL) {
+                    prevEntry = entry;
+                    entry = entry->getNext();
+                    delete prevEntry;
+                }
+            }
+        delete[] table;
+    }
+
+};
+#endif
+
+
+#ifndef HASH_H_QUEUE_H
+#define HASH_H_QUEUE_H
+#include <iostream>
+#include "hash.h"
+#include <queue>
+#include <chrono>
+#include <ctime>
+
+template<class T>
+struct Node{
+    std::pair<T,std::chrono::time_point<std::chrono::system_clock>> data;
+    Node *next;
+};
+
+template<class T>
+class QueueItem{
+private:
+    Node<T> *front;
+    Node<T> *rear;
+public:
+    QueueItem()
+    {
+        rear = NULL;
+        front = NULL;
+
+    }
+
+
+    bool isEmpty()
+    {
+        if(&(this->front) == &(this->rear))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    void Enqueue(const T& key)    // for insertion from rear
+    {
+        Node<T>* NewNode;
+        NewNode = new Node<T>();
+        auto start_time = std::chrono::high_resolution_clock::now();
+        NewNode->data.first = key;
+        NewNode->data.second = start_time;
+        NewNode->next = NULL;
+        if(this->isEmpty()){
+            front = NewNode;
+            rear = NewNode;
+        }else{
+            rear->next = NewNode;
+            rear = NewNode;
+        }
+    }
+
+
+    void Dequeue()            // for deletion from front
+    {
+        Node<T> *temp;
+        if(front == NULL)
+            std::cout<<"Queue is Empty";
+        else
+        {
+            temp= front;
+            front = front->next;
+            delete temp;
+        }
+    }
+
+    void display()
+    {
+        Node<T> *temp;
+        temp = front;
+        while(temp!=NULL) // (temp!= rear->next)
+        {
+            std::chrono::time_point<std::chrono::system_clock> time_point;
+            time_point = temp->data.second;
+            std::time_t ttp = std::chrono::system_clock::to_time_t(time_point);
+            std::cout<<"[KEY]:  "<<temp->data.first<<"  [time]:  " <<std::ctime(&ttp);
+            temp = temp->next;
+        }
+        std::cout<<std::endl;
+    }
+
+
+    const std::pair<T,std::chrono::time_point<std::chrono::system_clock>>& getFirst() const
+    {
+        return front->data;
+    }
+};
+#endif //HASH_H_QUEUE_H
+
+
+
+
+#ifndef HASH_H_CASH_H
+#define HASH_H_CASH_H
+#include <iostream>
+#include "hash.h"
+#include "queue.h"
+template<class T,class V>
+class Cash{
+private:
+    double timeToLeave = 5e-6;
+    HashMap<T,V>* HashMap;
+    QueueItem<T>* Queue;
+public:
+    Cash()
+    {
+        timeToLeave = 0;
+    }
+
+    void Add(const T& key,const  V& item)
+    {
+        if(Queue->isEmpty())
+        {
+            Queue->Enqueue(key);
+            HashMap->insert(key,item);
+            return;
+        }
+        while (!(Queue->isEmpty()))
+        {
+            auto end = std::chrono::high_resolution_clock::now();
+            auto curr = Queue->getFirst();
+            double duration = std::chrono::duration<double, std::milli>(end - curr.second).count();
+            if(duration<timeToLeave)
+            {
+                Queue->Enqueue(key);
+                HashMap->insert(key,item);
+            }else{
+                HashMap->remove(key);
+                Queue->Dequeue();
+            }
+        }
+    }
+
+    bool Search(const T& key)
+    {
+        if(Queue->isEmpty())
+        {
+            std::cout<<"[WARNING] Table is empty!\n";
+            return false;
+        }else if(HashMap->searchTable(key))
+            {
+                return true;
+            } else{
+
+            return false;
+        }
+
+    }
+
+    void Display()
+    {
+        HashMap->printTable();
+    }
+
+};
+#endif //HASH_H_CASH_H
