@@ -1,113 +1,89 @@
-#ifndef QUEUE_H
-#define QUEUE_H
-#include "sequence.h"
+#ifndef HASH_H_QUEUE_H
+#define HASH_H_QUEUE_H
+#include <iostream>
+#include "hash.h"
+#include <queue>
+#include <chrono>
+#include <ctime>
 
-template<class T,template<class M>class S>
-class Queue{
+template<class T>
+struct Node{
+    std::pair<T,std::chrono::time_point<std::chrono::system_clock>> data;
+    Node *next;
+};
+
+template<class T>
+class QueueItem{
+private:
+    Node<T> *front;
+    Node<T> *rear;
 public:
-    Sequence<T>* sequence;
-
-    Queue()
+    QueueItem()
     {
-        sequence = new S<T>();
+       front = rear = nullptr;
+
     }
 
-    void push( T data )
+    bool isEmpty()
     {
-        sequence->Append(data);
+        if(&(this->front) == &(this->rear))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
-    void pop()
+    void Enqueue(const T& key)    // for insertion from rear
     {
-        sequence->Delete_last();
+        Node<T>* NewNode = new Node<T>();
+        auto start_time = std::chrono::high_resolution_clock::now();
+        NewNode->data.first = key;
+        NewNode->data.second = start_time;
+        NewNode->next = NULL;
+        if(this->rear == NULL){
+            front = NewNode;
+            rear = NewNode;
+            return;
+        }else{
+            rear->next = NewNode;
+            rear = NewNode;
+        }
     }
 
-    void Search(T item)
+    void Dequeue()            // for deletion from front
     {
-        sequence->Search(item);
+        Node<T> *temp;
+        if(front == NULL)
+            std::cout<<"Queue is Empty";
+        else
+        {
+            temp= front;
+            front = front->next;
+            delete temp;
+        }
     }
 
-
-    Sequence<T>* Where(bool(*cond)(const T&))
+    void display()
     {
-        return sequence->where(cond);
+        Node<T> *temp;
+        temp = front;
+        while(temp!=NULL) // (temp!= rear->next)
+        {
+            std::chrono::time_point<std::chrono::system_clock> time_point;
+            time_point = temp->data.second;
+            std::time_t ttp = std::chrono::system_clock::to_time_t(time_point);
+            std::cout<<"[KEY]:  "<<temp->data.first<<"  [time]:  " <<std::ctime(&ttp);
+            temp = temp->next;
+        }
+        std::cout<<std::endl;
     }
 
-    Sequence<T>* Map( T(*fun)(const T&))
+    const std::pair<T,std::chrono::time_point<std::chrono::system_clock>>& getFirst() const
     {
-        return  sequence->map(fun);
-    }
-
-    void Sort(bool(*Compare)(const T& i,const T& j))
-    {
-        sequence->Sort(Compare);
-    }
-
-    T get_first()
-    {
-       return sequence->getfirst();
-    }
-
-    T get_last()
-    {
-        return sequence->getlast();
-    }
-
-    T get_pos(int pos)
-    {
-       return sequence->get(pos);
-    }
-
-    void Del_pos(int pos)
-    {
-        sequence->delete_by_index(pos);
-    }
-
-    void Del_first()
-    {
-        sequence->Delete_first();
-    }
-
-    void Del_last()
-    {
-        sequence->Delete_last();
-    }
-
-    void Insert_At(int pos)
-    {
-        sequence->insertAt(pos);
-    }
-
-    int get_size()
-    {
-        return sequence->get_len();
-    }
-
-    Sequence<T>* Subsequence(int start,int end)
-    {
-        sequence = sequence->subsequence(start,end);
-        return sequence;
-    }
-
-    Sequence<T>* Concate(Sequence<T>* list)
-    {
-        sequence = sequence->con_cate(list);
-        return list;
-    }
-
-    void Display()
-    {
-        sequence->Print();
-    }
-
-    void Reduce()
-    {
-        sequence->Delete_last();
-    }
-
-    ~Queue()
-    {
-        delete(sequence);
+        return front->data;
     }
 };
-#endif
+#endif //HASH_H_QUEUE_H
